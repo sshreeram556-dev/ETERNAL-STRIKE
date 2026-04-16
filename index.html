@@ -1,203 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ETERNAL STRIKE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETERNAL STRIKE</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
-    :root { --primary: #f97316; --danger: #ef4444; --success: #10b981; --ss: #f59e0b; }
-    body { background: #020617; color: white; margin: 0; overflow: hidden; font-family: 'Orbitron', sans-serif; transition: all 0.5s ease-in-out; touch-action: manipulation; }
-    #stage { height: 100vh; width: 100vw; display: flex; flex-direction: column; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-    .header { padding: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
-    .level-badge { background: var(--primary); padding: 5px 15px; font-weight: bold; font-size: 20px; clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%); text-shadow: 2px 2px black; }
-    #leaderboard { position: absolute; left: 10px; top: 260px; background: rgba(15, 23, 42, 0.9); padding: 12px; border: 1px solid #334155; font-size: 11px; width: 180px; z-index: 10; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-    #feed { position:absolute; right:10px; top:150px; width:200px; font-size:10px; color:#94a3b8; max-height:200px; overflow:hidden; text-align: right; pointer-events: none; }
-    .rank-item { margin: 5px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding: 5px 0; cursor: pointer; }
-    .is-me { border: 1px solid white; background: rgba(255, 255, 255, 0.1); font-weight: bold; }
-    .bar-bg { background: #1e293b; height: 10px; border: 1px solid #334155; margin: 3px 0; position: relative; overflow: hidden; border-radius: 2px;}
-    .bar-fill { height: 100%; transition: width 0.3s ease-out; }
-    .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; padding: 0 10px; box-sizing: border-box; }
-    .btn { background: #1e293b; border: 2px solid #334155; color: white; padding: 10px 12px; font-family: 'Anton', sans-serif; cursor: pointer; font-size: 11px; text-transform: uppercase; transition: 0.2s; border-radius: 4px; }
-    .btn:active { transform: scale(0.95); background: #334155; }
-    .panel { display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:#0f172a; padding:20px; border:1px solid #334155; z-index:1000; width:280px; box-shadow: 0 0 50px black; border-radius: 8px; }
-    @keyframes floatUp { from { transform: translate(-50%, 0); opacity: 1; } to { transform: translate(-50%, -100px); opacity: 0; } }
+body {
+  background:#020617;
+  color:white;
+  font-family:Orbitron;
+  text-align:center;
+  margin:0;
+}
+
+.container {
+  padding:20px;
+}
+
+.bar {
+  height:12px;
+  background:red;
+  margin:10px auto;
+  width:200px;
+}
+
+.btn {
+  padding:12px;
+  margin:8px;
+  background:#1e293b;
+  border:1px solid #334155;
+  color:white;
+  cursor:pointer;
+}
 </style>
 </head>
+
 <body>
-<div id="stage">
-    <div id="feed"></div>
-    <div class="header">
-        <div>
-            <div class="level-badge">STRIKE <span id="lvl">1</span></div>
-            <div id="onlineCount" style="font-size:10px; color:cyan; margin-top:3px; font-weight: bold;">🌐 ONLINE: --</div>
-            <div style="font-size:10px; margin-top: 5px; color: #cbd5e1;">💰 <span id="coins">0</span></div>
-        </div>
-        <div style="width: 250px;">
-            <div id="displayName" style="font-size: 11px; margin-bottom: 5px; font-weight: bold; color: #fff; text-transform: uppercase;">---</div>
-            <div class="bar-bg"><div id="pHP" class="bar-fill" style="background:var(--success)"></div></div>
-            <div id="enemyName" style="font-size: 9px; color: var(--danger); font-weight: bold; letter-spacing: 1px;">GRUNT</div>
-            <div class="bar-bg"><div id="eHP" class="bar-fill" style="background:var(--danger)"></div></div>
-        </div>
-    </div>
 
-    <div id="inventoryPanel" class="panel">
-        <div style="color:gold; font-weight:bold; margin-bottom:10px; border-bottom: 1px solid #334155; padding-bottom: 5px;">🎒 GEAR & CORES</div>
-        <div id="invList" style="max-height:200px; overflow-y:auto; font-size: 11px;"></div>
-        <button class="btn" style="width:100%; margin-top:10px;" onclick="closeInventory()">❌ Close</button>
-    </div>
+<div class="container">
 
-    <div id="leaderboard"><div id="ranks"></div></div>
+<h2>⚔️ ETERNAL STRIKE</h2>
 
-    <div class="controls">
-        <button class="btn" onclick="playerAttack()" style="background: #334155;">⚔️ STRIKE</button>
-        <button class="btn" style="border-color:lime;" onclick="upgradeDamage()">⚡ DMG UP</button>
-        <button class="btn" style="border-color:cyan;" onclick="upgradeHealth()">❤️ HP UP</button>
-        <button class="btn" onclick="openInventory()">🎒 GEAR</button>
-        <button class="btn" onclick="customize()">🎨 IDENTITY</button>
-    </div>
+<div id="online">🌐 ONLINE: --</div>
+
+<h3>PLAYER</h3>
+<div id="pHP" class="bar"></div>
+
+<h3>ENEMY</h3>
+<div id="eHP" class="bar"></div>
+
+<button class="btn" onclick="attack()">⚔️ ATTACK</button>
+<button class="btn" onclick="upgrade()">⚡ UPGRADE DMG</button>
+
 </div>
 
-<script>
-    const firebaseConfig = { apiKey: "API_KEY", projectId: "PROJECT_ID" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+<!-- 🔥 FIREBASE + GAME (ALL IN ONE) -->
+<script type="module">
 
-    const ITEMS = {
-        common: [{name: "Iron Blade", crit: 0.05}, {name: "Steel Core", lifesteal: 0.05}],
-        rare: [{name: "Shadow Fang", crit: 0.15}, {name: "Ghost Cloak", dodge: 0.15}]
-    };
+// 🔥 FIREBASE IMPORTS
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
-    let lastAttack = 0, enemy = {hp: 100, maxHp: 100, dmg: 5};
-    let player = { 
-        id: localStorage.getItem("playerId") || crypto.randomUUID(),
-        name: localStorage.getItem("playerName") || "Operator", 
-        hp: 100, maxHp: 100, lvl: 1, score: 0, coins: 0, 
-        upgrades: { damage: 1, health: 1 },
-        crit: 0.15, dodge: 0.10, inventory: [], equippedIndex: null
-    };
+// 🔥 YOUR FIREBASE CONFIG (ALREADY FILLED)
+const firebaseConfig = {
+  apiKey: "AIzaSyDNcXkjE6wrZkR5UeurVeu8UMS8I_ZgNKE",
+  authDomain: "eternalstrike-c336c.firebaseapp.com",
+  projectId: "eternalstrike-c336c",
+  storageBucket: "eternalstrike-c336c.firebasestorage.app",
+  messagingSenderId: "1031582040385",
+  appId: "1:1031582040385:web:c4f07b6a870414194121c0",
+  measurementId: "G-SN3L9M8FCT"
+};
 
-    function syncGame() {
-        db.collection("players").doc(player.id).get().then(doc => {
-            if(doc.exists){
-                let data = doc.data();
-                player.coins = data.coins ?? 0;
-                player.lvl = data.lvl ?? 1;
-                player.score = data.score ?? 0;
-                player.upgrades = data.upgrades || { damage: 1, health: 1 };
-                player.inventory = data.inventory || [];
-                player.equippedIndex = data.equippedIndex ?? null;
-                if(player.equippedIndex !== null) equipItem(player.equippedIndex);
-                updateUI();
-            }
-        });
+// 🔥 INIT FIREBASE
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        // Online Pulse
-        setInterval(() => {
-            const nowTime = Date.now();
-            db.collection("players").where("lastActive", ">", nowTime - 30000).get().then(snap => {
-                document.getElementById("onlineCount").innerText = "🌐 ONLINE: " + snap.size;
-            });
-        }, 5000);
+// 🔥 GAME DATA
+let player = {
+  id: localStorage.getItem("id") || Math.random().toString(36),
+  hp: 100,
+  dmg: 10
+};
 
-        db.collection("players").orderBy("score", "desc").limit(10).onSnapshot(snap => {
-            let list = []; snap.forEach(doc => list.push(doc.data()));
-            renderLeaderboard(list);
-        });
-    }
+let enemy = {
+  hp: 100
+};
 
-    function saveScore() {
-        db.collection("players").doc(player.id).set({
-            ...player,
-            lastActive: Date.now()
-        }, { merge: true });
-    }
+localStorage.setItem("id", player.id);
 
-    function playerAttack(){
-        let baseDmg = (10 + player.lvl * 2) * player.upgrades.damage;
-        let dmg = Math.floor(baseDmg + Math.random()*5);
-        enemy.hp = Math.max(0, enemy.hp - dmg);
-        player.score += dmg;
-        player.hp -= enemy.dmg; 
-        if(enemy.hp <= 0) handleKill();
-        updateUI();
-        saveScore();
-    }
+// 🔥 GAME FUNCTIONS
+window.attack = async function(){
+  enemy.hp -= player.dmg;
+  player.hp -= 5;
 
-    function spawnEnemy(){
-        let types = ["GRUNT","TANK","STRIKER"];
-        document.getElementById("enemyName").innerText = types[Math.floor(Math.random()*types.length)];
-        enemy.maxHp = 100 + player.lvl * 10;
-        enemy.hp = enemy.maxHp;
-        enemy.dmg = 5 + Math.floor(player.lvl / 2);
-    }
+  if(enemy.hp <= 0){
+    enemy.hp = 100;
+  }
 
-    function updateUI() {
-        player.maxHp = 100 * player.upgrades.health;
-        if(player.hp <= 0) { player.hp = player.maxHp; player.coins = Math.max(0, player.coins - 20); saveScore(); }
-        
-        // Tier Logic for ETERNAL STRIKE
-        let tier = "BRONZE";
-        if(player.lvl >= 10) tier = "SILVER";
-        if(player.lvl >= 20) tier = "GOLD";
-        if(player.lvl >= 30) tier = "ELITE";
-        if(player.lvl >= 50) tier = "ETERNAL";
+  updateUI();
+  await savePlayer();
+};
 
-        document.getElementById('displayName').innerHTML = `${player.name} [${tier}]`;
-        document.getElementById('coins').innerText = player.coins;
-        document.getElementById('lvl').innerText = player.lvl;
-        document.getElementById('pHP').style.width = (player.hp / player.maxHp * 100) + "%";
-        document.getElementById('eHP').style.width = (enemy.hp / enemy.maxHp * 100) + "%";
-    }
+window.upgrade = function(){
+  player.dmg += 5;
+  updateUI();
+};
 
-    // Standard Actions
-    function upgradeDamage(){
-        let cost = Math.floor(player.upgrades.damage * 200);
-        if(player.coins >= cost){
-            player.coins -= cost; player.upgrades.damage += 0.2;
-            floatingText("⚡ DMG UP!", "lime"); saveScore(); updateUI();
-        } else { floatingText("❌ NEED " + cost, "red"); }
-    }
-    function upgradeHealth(){
-        let cost = Math.floor(player.upgrades.health * 150);
-        if(player.coins >= cost){
-            player.coins -= cost; player.upgrades.health += 0.2;
-            floatingText("❤️ HP UP!", "cyan"); saveScore(); updateUI();
-        } else { floatingText("❌ NEED " + cost, "red"); }
-    }
-    function handleKill(){
-        player.lvl++;
-        if(player.lvl % 5 === 0){ player.coins += 200; floatingText("🎉 MILESTONE!", "gold"); }
-        if(Math.random() < 0.3){
-            let pool = Math.random() < 0.8 ? ITEMS.common : ITEMS.rare;
-            player.inventory.push({...pool[Math.floor(Math.random()*pool.length)]});
-            floatingText("🎁 LOOT FOUND", "cyan");
-        }
-        spawnEnemy(); saveScore();
-    }
-    function equipItem(index){
-        let item = player.inventory[index]; if(!item) return;
-        player.equippedIndex = index;
-        saveScore(); updateUI();
-        if(document.getElementById("inventoryPanel").style.display === "block") closeInventory();
-    }
-    function renderLeaderboard(list){ document.getElementById('ranks').innerHTML = list.map((p, i) => `<div class="rank-item ${p.id === player.id ? 'is-me' : ''}"><span>${i+1}. ${p.name}</span><span>${p.score.toLocaleString()}</span></div>`).join(''); }
-    function openInventory(){ renderInventory(); document.getElementById("inventoryPanel").style.display = "block"; }
-    function renderInventory(){
-        let list = document.getElementById("invList");
-        if(player.inventory.length === 0){ list.innerHTML = "Empty"; return; }
-        list.innerHTML = player.inventory.map((item, i) => `<div style="border-bottom:1px solid #334155; padding:8px; display:flex; justify-content:space-between;"><span>${item.name}</span><button class="btn" style="font-size:9px;" onclick="equipItem(${i})">Equip</button></div>`).join("");
-    }
-    function closeInventory(){ document.getElementById("inventoryPanel").style.display = "none"; }
-    function floatingText(t, c){ let el = document.createElement("div"); el.innerText = t; el.style.position = "absolute"; el.style.left = "50%"; el.style.top = "50%"; el.style.color = c; el.style.fontSize = "22px"; el.style.fontWeight = "bold"; el.style.zIndex = "999"; el.style.animation = "floatUp 1s forwards"; document.body.appendChild(el); setTimeout(()=>el.remove(), 1000); }
-    function customize(){ let n = prompt("IDENTITY:", player.name); if(n) { player.name = n; localStorage.setItem("playerName", n); saveScore(); updateUI(); } }
+// 🔥 UI UPDATE
+function updateUI(){
+  document.getElementById("pHP").style.width = player.hp + "%";
+  document.getElementById("eHP").style.width = enemy.hp + "%";
+}
 
-    setInterval(() => { if(player.hp < player.maxHp){ player.hp = Math.min(player.hp + 2, player.maxHp); updateUI(); } }, 2000);
-    localStorage.setItem("playerId", player.id);
-    syncGame(); spawnEnemy(); updateUI();
+// 🔥 SAVE TO FIREBASE
+async function savePlayer(){
+  await setDoc(doc(db, "players", player.id), player);
+}
+
+// 🔥 ONLINE COUNT
+setInterval(async ()=>{
+  const snap = await getDocs(collection(db, "players"));
+  document.getElementById("online").innerText =
+    "🌐 ONLINE: " + snap.size;
+}, 3000);
+
+// START
+updateUI();
+
 </script>
+
 </body>
 </html>
-
